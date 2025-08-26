@@ -25,8 +25,8 @@ export default function LoginPage() {
     } else if (role === 'merchant') {
       router.push('/merchant/dashboard');
     } else if (role === 'tenant') {
-        router.push('/tenant/dashboard');
-    } else {
+      router.push('/tenant/dashboard');
+    } else if (role === 'cashier') {
       router.push('/pos');
     }
   };
