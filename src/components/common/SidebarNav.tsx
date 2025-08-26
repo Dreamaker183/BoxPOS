@@ -49,10 +49,11 @@ import {
 import { useRouter } from 'next/navigation';
 
 const mainNavItems = [
-  { href: '/pos', icon: ShoppingCart, label: 'Point of Sale' },
   { href: '/profile', icon: User, label: 'Profile' },
   { href: '/notifications', icon: Bell, label: 'Notifications' },
 ];
+
+const posNavItem = { href: '/pos', icon: ShoppingCart, label: 'Point of Sale' };
 
 const adminNavItems = [
     { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -86,11 +87,11 @@ export default function SidebarNav() {
   const router = useRouter();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // For this prototype, we'll determine the "role" from the URL.
-  // In a real app, this would come from an auth context.
+  // Determine the current role from the URL path.
   const isAdmin = pathname.startsWith('/admin');
   const isMerchant = pathname.startsWith('/merchant');
   const isTenant = pathname.startsWith('/tenant');
+  const isPos = pathname.startsWith('/pos');
 
   const handleLogout = () => {
     router.push('/login');
@@ -111,6 +112,25 @@ export default function SidebarNav() {
       <Separator />
       <SidebarContent>
         <SidebarMenu>
+          {isPos && (
+             <SidebarMenuItem key={posNavItem.href}>
+              <Link href={posNavItem.href} legacyBehavior passHref>
+                <SidebarMenuButton
+                  asChild
+                  isActive={checkActive(posNavItem.href)}
+                  tooltip={{
+                    children: posNavItem.label,
+                    hidden: state === 'expanded',
+                  }}
+                >
+                  <a>
+                    <posNavItem.icon />
+                    <span>{posNavItem.label}</span>
+                  </a>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          )}
           {mainNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <Link href={item.href} legacyBehavior passHref>
