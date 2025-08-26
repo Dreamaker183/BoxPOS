@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,15 +9,22 @@ import { ScrollArea } from '../ui/scroll-area';
 interface ProductGridProps {
   products: Product[];
   onAddToCart: (product: Product) => void;
+  searchTerm: string;
+  onSearchTermChange: (term: string) => void;
 }
 
-export default function ProductGrid({ products, onAddToCart }: ProductGridProps) {
+export default function ProductGrid({ products, onAddToCart, searchTerm, onSearchTermChange }: ProductGridProps) {
   return (
     <div className="flex flex-col h-full rounded-lg bg-card text-card-foreground shadow-lg">
       <div className="p-4 border-b">
         <div className="relative">
           <ScanLine className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Scan barcode or search products..." className="pl-10 text-base" />
+          <Input 
+            placeholder="Scan barcode or search products..." 
+            className="pl-10 text-base"
+            value={searchTerm}
+            onChange={(e) => onSearchTermChange(e.target.value)}
+          />
         </div>
       </div>
       <ScrollArea className="flex-1">

@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import ProductGrid from '@/components/pos/ProductGrid';
 import Cart from '@/components/pos/Cart';
 import type { Product, CartItem } from '@/lib/types';
@@ -18,6 +19,7 @@ const mockProducts: Product[] = [
 
 export default function PosPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const addToCart = (product: Product) => {
     setCartItems((prevItems) => {
@@ -50,10 +52,24 @@ export default function PosPage() {
     setCartItems([]);
   };
 
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) {
+      return mockProducts;
+    }
+    return mockProducts.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
+
   return (
     <div className="h-[calc(100vh-6rem)] grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 h-full">
-        <ProductGrid products={mockProducts} onAddToCart={addToCart} />
+        <ProductGrid 
+          products={filteredProducts} 
+          onAddToCart={addToCart}
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+        />
       </div>
       <div className="lg:col-span-1 h-full">
         <Cart

@@ -1,18 +1,20 @@
+
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { DollarSign, Package, Users, Receipt } from 'lucide-react';
 import type { ChartConfig } from '@/components/ui/chart';
 
-const salesData = [
-  { month: 'January', sales: Math.floor(Math.random() * 5000) + 1000 },
-  { month: 'February', sales: Math.floor(Math.random() * 5000) + 1000 },
-  { month: 'March', sales: Math.floor(Math.random() * 5000) + 1000 },
-  { month: 'April', sales: Math.floor(Math.random() * 5000) + 1000 },
-  { month: 'May', sales: Math.floor(Math.random() * 5000) + 1000 },
-  { month: 'June', sales: Math.floor(Math.random() * 5000) + 1000 },
+const initialSalesData = [
+  { month: 'January', sales: 0 },
+  { month: 'February', sales: 0 },
+  { month: 'March', sales: 0 },
+  { month: 'April', sales: 0 },
+  { month: 'May', sales: 0 },
+  { month: 'June', sales: 0 },
 ];
 
 const topProductsData = [
@@ -53,6 +55,13 @@ const pieChartConfig: ChartConfig = {
 
 
 export default function DashboardPage() {
+  const [salesData, setSalesData] = useState(initialSalesData);
+
+  useEffect(() => {
+    // Generate random data on the client side to avoid hydration mismatch
+    setSalesData(initialSalesData.map(d => ({ ...d, sales: Math.floor(Math.random() * 5000) + 1000 })));
+  }, []);
+  
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       <Card>
