@@ -1,12 +1,17 @@
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import {
   LayoutDashboard,
   ShoppingCart,
   Settings,
   Box,
+  User,
+  Bell,
+  LogOut,
 } from 'lucide-react';
 
 import {
@@ -16,18 +21,39 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   useSidebar,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/pos', icon: ShoppingCart, label: 'Point of Sale' },
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/profile', icon: User, label: 'Profile' },
+  { href: '/notifications', icon: Bell, label: 'Notifications' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function SidebarNav() {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const router = useRouter();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  const handleLogout = () => {
+    // Perform logout actions here (e.g., clear session)
+    router.push('/login');
+  };
 
   return (
     <>
@@ -63,6 +89,37 @@ export default function SidebarNav() {
           ))}
         </SidebarMenu>
       </SidebarContent>
+      <Separator />
+      <SidebarFooter>
+        <SidebarMenu>
+           <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => setIsLogoutModalOpen(true)}
+                  tooltip={{
+                    children: 'Logout',
+                    hidden: state === 'expanded',
+                  }}
+                >
+                    <LogOut />
+                    <span>Logout</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+      <AlertDialog open={isLogoutModalOpen} onOpenChange={setIsLogoutModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be returned to the login screen. Any unsaved changes may be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, stay logged in</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout}>Yes, log out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
