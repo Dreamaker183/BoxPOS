@@ -31,6 +31,11 @@ const getTitleFromPathname = (pathname: string): string => {
   if (pathname.startsWith('/merchant/settlements')) return 'Settlements & Financials';
   if (pathname.startsWith('/merchant/reports')) return 'Merchant Reports';
   
+  // Tenant Paths
+  if (pathname.startsWith('/tenant/dashboard')) return 'Tenant Dashboard';
+  if (pathname.startsWith('/tenant/products')) return 'My Products';
+  if (pathname.startsWith('/tenant/reports')) return 'My Reports';
+
   // General Paths
   if (pathname.startsWith('/settings')) return 'Settings';
   if (pathname.startsWith('/profile')) return 'Profile';

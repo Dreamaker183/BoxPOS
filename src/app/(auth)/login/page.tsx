@@ -14,14 +14,18 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [role, setRole] = useState('cashier');
+  const [role, setRole] = useState('admin');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real app, you'd have authentication logic here.
-    // For this prototype, we'll just redirect.
+    // For this prototype, we'll just redirect based on the selected role.
     if (role === 'admin') {
-      router.push('/dashboard');
+      router.push('/admin/dashboard');
+    } else if (role === 'merchant') {
+      router.push('/merchant/dashboard');
+    } else if (role === 'tenant') {
+        router.push('/tenant/dashboard');
     } else {
       router.push('/pos');
     }
@@ -59,8 +63,10 @@ export default function LoginPage() {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cashier">Cashier</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="merchant">Merchant</SelectItem>
+                  <SelectItem value="tenant">Tenant</SelectItem>
+                  <SelectItem value="cashier">Cashier (POS)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
