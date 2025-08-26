@@ -43,7 +43,6 @@ export default function ProductGrid({ products, onAddToCart, searchTerm, onSearc
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     className="object-cover"
-                    data-ai-hint={product['data-ai-hint']}
                   />
                 </div>
                 <div className="p-3 w-full">

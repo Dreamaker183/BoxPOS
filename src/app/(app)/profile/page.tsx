@@ -22,7 +22,7 @@ export default function ProfilePage() {
             <Card>
                 <CardContent className="pt-6 flex flex-col items-center text-center">
                     <Avatar className="w-24 h-24 mb-4">
-                        <AvatarImage src="https://picsum.photos/200" alt="User" data-ai-hint="person portrait"/>
+                        <AvatarImage src="https://picsum.photos/200" alt="User" />
                         <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
                     <h3 className="text-xl font-semibold">John Doe</h3>

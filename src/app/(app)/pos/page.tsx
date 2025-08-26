@@ -7,14 +7,14 @@ import Cart from '@/components/pos/Cart';
 import type { Product, CartItem } from '@/lib/types';
 
 const mockProducts: Product[] = [
-  { id: '1', name: 'Espresso', price: 2.5, imageUrl: 'https://picsum.photos/200/200?random=1', 'data-ai-hint': 'coffee cup', category: 'Coffee', stock: 100 },
-  { id: '2', name: 'Latte', price: 3.5, imageUrl: 'https://picsum.photos/200/200?random=2', 'data-ai-hint': 'latte art', category: 'Coffee', stock: 100 },
-  { id: '3', name: 'Cappuccino', price: 3.5, imageUrl: 'https://picsum.photos/200/200?random=3', 'data-ai-hint': 'cappuccino foam', category: 'Coffee', stock: 100 },
-  { id: '4', name: 'Croissant', price: 2.75, imageUrl: 'https://picsum.photos/200/200?random=4', 'data-ai-hint': 'buttery croissant', category: 'Pastries', stock: 50 },
-  { id: '5', name: 'Muffin', price: 2.25, imageUrl: 'https://picsum.photos/200/200?random=5', 'data-ai-hint': 'blueberry muffin', category: 'Pastries', stock: 50 },
-  { id: '6', name: 'Iced Tea', price: 2.0, imageUrl: 'https://picsum.photos/200/200?random=6', 'data-ai-hint': 'iced tea', category: 'Drinks', stock: 75 },
-  { id: '7', name: 'Bagel', price: 3.0, imageUrl: 'https://picsum.photos/200/200?random=7', 'data-ai-hint': 'sesame bagel', category: 'Pastries', stock: 40 },
-  { id: '8', name: 'Americano', price: 2.75, imageUrl: 'https://picsum.photos/200/200?random=8', 'data-ai-hint': 'black coffee', category: 'Coffee', stock: 100 },
+  { id: '1', name: 'Espresso', price: 2.5, imageUrl: 'https://picsum.photos/200/200?random=1', category: 'Coffee', stock: 100 },
+  { id: '2', name: 'Latte', price: 3.5, imageUrl: 'https://picsum.photos/200/200?random=2', category: 'Coffee', stock: 100 },
+  { id: '3', name: 'Cappuccino', price: 3.5, imageUrl: 'https://picsum.photos/200/200?random=3', category: 'Coffee', stock: 100 },
+  { id: '4', name: 'Croissant', price: 2.75, imageUrl: 'https://picsum.photos/200/200?random=4', category: 'Pastries', stock: 50 },
+  { id: '5', name: 'Muffin', price: 2.25, imageUrl: 'https://picsum.photos/200/200?random=5', category: 'Pastries', stock: 50 },
+  { id: '6', name: 'Iced Tea', price: 2.0, imageUrl: 'https://picsum.photos/200/200?random=6', category: 'Drinks', stock: 75 },
+  { id: '7', name: 'Bagel', price: 3.0, imageUrl: 'https://picsum.photos/200/200?random=7', category: 'Pastries', stock: 40 },
+  { id: '8', name: 'Americano', price: 2.75, imageUrl: 'https://picsum.photos/200/200?random=8', category: 'Coffee', stock: 100 },
 ];
 
 export default function PosPage() {
