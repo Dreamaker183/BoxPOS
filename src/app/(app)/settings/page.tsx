@@ -34,15 +34,15 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="primary-color">Primary Color</Label>
               <div className="relative">
-                <Input id="primary-color" placeholder="#64B5F6" defaultValue="#64B5F6" className="pl-8" />
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" style={{ backgroundColor: '#64B5F6' }} />
+                <Input id="primary-color" placeholder="#111827" defaultValue="#111827" className="pl-8" />
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border" style={{ backgroundColor: '#111827' }} />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="accent-color">Accent Color</Label>
               <div className="relative">
-                <Input id="accent-color" placeholder="#FFB74D" defaultValue="#FFB74D" className="pl-8" />
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" style={{ backgroundColor: '#FFB74D' }} />
+                <Input id="accent-color" placeholder="#f1f5f9" defaultValue="#f1f5f9" className="pl-8" />
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border" style={{ backgroundColor: '#f1f5f9' }} />
               </div>
             </div>
           </div>

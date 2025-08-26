@@ -89,7 +89,7 @@ export default function Cart({ items, onAdd, onRemove, onClear }: CartProps) {
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
-            <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={handlePayment}>
+            <Button size="lg" className="w-full" onClick={handlePayment}>
               <CreditCard className="mr-2 h-5 w-5" />
               Process Payment
             </Button>
