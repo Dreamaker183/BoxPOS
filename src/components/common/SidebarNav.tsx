@@ -17,6 +17,10 @@ import {
   Shield,
   FileBarChart,
   DatabaseZap,
+  Building2,
+  Package,
+  Boxes,
+  HandCoins,
 } from 'lucide-react';
 
 import {
@@ -56,6 +60,15 @@ const adminNavItems = [
     { href: '/admin/permissions', icon: Shield, label: 'Permissions' },
     { href: '/admin/reports', icon: FileBarChart, label: 'Reports' },
     { href: '/admin/backup', icon: DatabaseZap, label: 'Backup' },
+];
+
+const merchantNavItems = [
+    { href: '/merchant/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/merchant/booths', icon: Building2, label: 'Booths' },
+    { href: '/merchant/products', icon: Package, label: 'Products' },
+    { href: '/merchant/inventory', icon: Boxes, label: 'Inventory' },
+    { href: '/merchant/settlements', icon: HandCoins, label: 'Settlements' },
+    { href: '/merchant/reports', icon: FileBarChart, label: 'Reports' },
 ];
 
 const settingsNavItem = { href: '/settings', icon: Settings, label: 'Settings' };
@@ -105,10 +118,36 @@ export default function SidebarNav() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+        
         <SidebarGroup>
             <SidebarGroupLabel>Admin</SidebarGroupLabel>
             <SidebarMenu>
                 {adminNavItems.map((item) => (
+                     <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} legacyBehavior passHref>
+                            <SidebarMenuButton
+                            asChild
+                            isActive={checkActive(item.href)}
+                            tooltip={{
+                                children: item.label,
+                                hidden: state === 'expanded',
+                            }}
+                            >
+                            <a>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </a>
+                            </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+            <SidebarGroupLabel>Merchant</SidebarGroupLabel>
+            <SidebarMenu>
+                {merchantNavItems.map((item) => (
                      <SidebarMenuItem key={item.href}>
                         <Link href={item.href} legacyBehavior passHref>
                             <SidebarMenuButton

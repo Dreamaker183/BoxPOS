@@ -14,15 +14,28 @@ import { useRouter } from 'next/navigation';
 
 const getTitleFromPathname = (pathname: string): string => {
   if (pathname.startsWith('/pos')) return 'Point of Sale';
+  
+  // Admin Paths
   if (pathname.startsWith('/admin/dashboard')) return 'Admin Dashboard';
   if (pathname.startsWith('/admin/tenants')) return 'Tenant Management';
   if (pathname.startsWith('/admin/leases')) return 'Lease Management';
   if (pathname.startsWith('/admin/permissions')) return 'User Permissions';
   if (pathname.startsWith('/admin/reports')) return 'System Reports';
   if (pathname.startsWith('/admin/backup')) return 'Backup & Restore';
+
+  // Merchant Paths
+  if (pathname.startsWith('/merchant/dashboard')) return 'Merchant Dashboard';
+  if (pathname.startsWith('/merchant/booths')) return 'Booth Management';
+  if (pathname.startsWith('/merchant/products')) return 'Product Management';
+  if (pathname.startsWith('/merchant/inventory')) return 'Inventory Tracking';
+  if (pathname.startsWith('/merchant/settlements')) return 'Settlements & Financials';
+  if (pathname.startsWith('/merchant/reports')) return 'Merchant Reports';
+  
+  // General Paths
   if (pathname.startsWith('/settings')) return 'Settings';
   if (pathname.startsWith('/profile')) return 'Profile';
   if (pathname.startsWith('/notifications')) return 'Notifications';
+
   return 'BoxPOS';
 };
 
