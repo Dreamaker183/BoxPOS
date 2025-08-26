@@ -12,6 +12,11 @@ import {
   User,
   Bell,
   LogOut,
+  Users,
+  FileText,
+  Shield,
+  FileBarChart,
+  DatabaseZap,
 } from 'lucide-react';
 
 import {
@@ -22,6 +27,8 @@ import {
   SidebarMenuButton,
   useSidebar,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -36,13 +43,22 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
 
-const navItems = [
+const mainNavItems = [
   { href: '/pos', icon: ShoppingCart, label: 'Point of Sale' },
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/profile', icon: User, label: 'Profile' },
   { href: '/notifications', icon: Bell, label: 'Notifications' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
 ];
+
+const adminNavItems = [
+    { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/admin/tenants', icon: Users, label: 'Tenants' },
+    { href: '/admin/leases', icon: FileText, label: 'Leases' },
+    { href: '/admin/permissions', icon: Shield, label: 'Permissions' },
+    { href: '/admin/reports', icon: FileBarChart, label: 'Reports' },
+    { href: '/admin/backup', icon: DatabaseZap, label: 'Backup' },
+];
+
+const settingsNavItem = { href: '/settings', icon: Settings, label: 'Settings' };
 
 export default function SidebarNav() {
   const pathname = usePathname();
@@ -51,9 +67,10 @@ export default function SidebarNav() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleLogout = () => {
-    // Perform logout actions here (e.g., clear session)
     router.push('/login');
   };
+
+  const checkActive = (href: string) => pathname.startsWith(href);
 
   return (
     <>
@@ -68,12 +85,12 @@ export default function SidebarNav() {
       <Separator />
       <SidebarContent>
         <SidebarMenu>
-          {navItems.map((item) => (
+          {mainNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <Link href={item.href} legacyBehavior passHref>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href)}
+                  isActive={checkActive(item.href)}
                   tooltip={{
                     children: item.label,
                     hidden: state === 'expanded',
@@ -88,10 +105,51 @@ export default function SidebarNav() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+        <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarMenu>
+                {adminNavItems.map((item) => (
+                     <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} legacyBehavior passHref>
+                            <SidebarMenuButton
+                            asChild
+                            isActive={checkActive(item.href)}
+                            tooltip={{
+                                children: item.label,
+                                hidden: state === 'expanded',
+                            }}
+                            >
+                            <a>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </a>
+                            </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <Separator />
       <SidebarFooter>
         <SidebarMenu>
+            <SidebarMenuItem>
+                <Link href={settingsNavItem.href} legacyBehavior passHref>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={checkActive(settingsNavItem.href)}
+                        tooltip={{
+                            children: settingsNavItem.label,
+                            hidden: state === 'expanded',
+                        }}
+                    >
+                    <a>
+                        <settingsNavItem.icon />
+                        <span>{settingsNavItem.label}</span>
+                    </a>
+                    </SidebarMenuButton>
+                </Link>
+            </SidebarMenuItem>
            <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => setIsLogoutModalOpen(true)}

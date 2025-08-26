@@ -14,7 +14,12 @@ import { useRouter } from 'next/navigation';
 
 const getTitleFromPathname = (pathname: string): string => {
   if (pathname.startsWith('/pos')) return 'Point of Sale';
-  if (pathname.startsWith('/dashboard')) return 'Dashboard';
+  if (pathname.startsWith('/admin/dashboard')) return 'Admin Dashboard';
+  if (pathname.startsWith('/admin/tenants')) return 'Tenant Management';
+  if (pathname.startsWith('/admin/leases')) return 'Lease Management';
+  if (pathname.startsWith('/admin/permissions')) return 'User Permissions';
+  if (pathname.startsWith('/admin/reports')) return 'System Reports';
+  if (pathname.startsWith('/admin/backup')) return 'Backup & Restore';
   if (pathname.startsWith('/settings')) return 'Settings';
   if (pathname.startsWith('/profile')) return 'Profile';
   if (pathname.startsWith('/notifications')) return 'Notifications';
