@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -22,6 +22,10 @@ import {
   Boxes,
   HandCoins,
   Receipt,
+  DollarSign,
+  FilePlus,
+  FilePen,
+  Camera,
 } from 'lucide-react';
 
 import {
@@ -49,11 +53,10 @@ import {
 import { useRouter } from 'next/navigation';
 
 const mainNavItems = [
+  { href: '/pos', icon: ShoppingCart, label: 'Point of Sale' },
   { href: '/profile', icon: User, label: 'Profile' },
   { href: '/notifications', icon: Bell, label: 'Notifications' },
 ];
-
-const posNavItem = { href: '/pos', icon: ShoppingCart, label: 'Point of Sale' };
 
 const adminNavItems = [
     { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -74,9 +77,9 @@ const merchantNavItems = [
 ];
 
 const tenantNavItems = [
-    { href: '/tenant/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/tenant/products', icon: Package, label: 'My Products' },
-    { href: '/tenant/reports', icon: Receipt, label: 'My Reports' },
+  { href: '/tenant/products', icon: Package, label: 'My Products' },
+  { href: '/tenant/shelf', icon: Camera, label: 'Shelf' },
+  { href: '/tenant/reports', icon: Receipt, label: 'My Reports' },
 ];
 
 const settingsNavItem = { href: '/settings', icon: Settings, label: 'Settings' };
@@ -87,19 +90,56 @@ export default function SidebarNav() {
   const router = useRouter();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // Determine the current role from the URL path.
-  const isAdminPath = pathname.startsWith('/admin');
-  const isMerchantPath = pathname.startsWith('/merchant');
-  const isTenantPath = pathname.startsWith('/tenant');
-  const isPosPath = pathname.startsWith('/pos');
-  
-  const isRolePath = isAdminPath || isMerchantPath || isTenantPath || isPosPath;
+  // Track and persist the last known role so role menus stay visible
+  // when navigating to non-role routes like /pos, /profile, /notifications.
+  type Role = 'admin' | 'merchant' | 'tenant' | null;
+  const getRoleFromPath = (path: string): Role => {
+    if (path.startsWith('/admin')) return 'admin';
+    if (path.startsWith('/merchant')) return 'merchant';
+    if (path.startsWith('/tenant')) return 'tenant';
+    return null;
+  };
+
+  const [role, setRole] = useState<Role>(() => {
+    // Initialize from localStorage (if any) or from current path
+    if (typeof window !== 'undefined') {
+      const stored = window.localStorage.getItem('boxpos:lastRole') as Role | null;
+      if (stored === 'admin' || stored === 'merchant' || stored === 'tenant') return stored;
+    }
+    return getRoleFromPath(pathname);
+  });
+
+  // Update role only when visiting a role-scoped route; otherwise keep previous.
+  useEffect(() => {
+    const inferred = getRoleFromPath(pathname);
+    if (inferred) {
+      setRole(inferred);
+    }
+  }, [pathname]);
+
+  // Persist role for future navigations.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && role) {
+      window.localStorage.setItem('boxpos:lastRole', role);
+    }
+  }, [role]);
 
   const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('boxpos:lastRole');
+    }
     router.push('/login');
   };
 
   const checkActive = (href: string) => pathname.startsWith(href);
+
+  // Show or hide POS entry based on role
+  const visibleMainNavItems = (() => {
+    if (role === 'admin' || role === 'merchant' || role === 'tenant') {
+      return mainNavItems.filter((i) => i.href !== '/pos');
+    }
+    return mainNavItems;
+  })();
 
   return (
     <>
@@ -114,28 +154,9 @@ export default function SidebarNav() {
       <Separator />
       <SidebarContent>
         <SidebarMenu>
-          {!isAdminPath && !isMerchantPath && !isTenantPath && (
-             <SidebarMenuItem key={posNavItem.href}>
-              <Link href={posNavItem.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={checkActive(posNavItem.href)}
-                  tooltip={{
-                    children: posNavItem.label,
-                    hidden: state === 'expanded',
-                  }}
-                >
-                  <>
-                    <posNavItem.icon />
-                    <span>{posNavItem.label}</span>
-                  </>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          )}
-          {mainNavItems.map((item) => (
+          {visibleMainNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
+              <Link href={item.href} legacyBehavior passHref>
                 <SidebarMenuButton
                   asChild
                   isActive={checkActive(item.href)}
@@ -144,23 +165,23 @@ export default function SidebarNav() {
                     hidden: state === 'expanded',
                   }}
                 >
-                  <>
+                  <a>
                     <item.icon />
                     <span>{item.label}</span>
-                  </>
+                  </a>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
         
-        {isAdminPath && isRolePath && (
+  {role === 'admin' && (
             <SidebarGroup>
                 <SidebarGroupLabel>Admin</SidebarGroupLabel>
                 <SidebarMenu>
                     {adminNavItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                            <Link href={item.href}>
+                            <Link href={item.href} legacyBehavior passHref>
                                 <SidebarMenuButton
                                 asChild
                                 isActive={checkActive(item.href)}
@@ -169,10 +190,10 @@ export default function SidebarNav() {
                                     hidden: state === 'expanded',
                                 }}
                                 >
-                                  <>
+                                <a>
                                     <item.icon />
                                     <span>{item.label}</span>
-                                  </>
+                                </a>
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>
@@ -181,13 +202,13 @@ export default function SidebarNav() {
             </SidebarGroup>
         )}
 
-        {isMerchantPath && isRolePath && (
+  {role === 'merchant' && (
             <SidebarGroup>
                 <SidebarGroupLabel>Merchant</SidebarGroupLabel>
                 <SidebarMenu>
                     {merchantNavItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                            <Link href={item.href}>
+                            <Link href={item.href} legacyBehavior passHref>
                                 <SidebarMenuButton
                                 asChild
                                 isActive={checkActive(item.href)}
@@ -196,10 +217,10 @@ export default function SidebarNav() {
                                     hidden: state === 'expanded',
                                 }}
                                 >
-                                  <>
+                                <a>
                                     <item.icon />
                                     <span>{item.label}</span>
-                                  </>
+                                </a>
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>
@@ -208,13 +229,13 @@ export default function SidebarNav() {
             </SidebarGroup>
         )}
 
-        {isTenantPath && isRolePath && (
+  {role === 'tenant' && (
             <SidebarGroup>
                 <SidebarGroupLabel>Tenant</SidebarGroupLabel>
                 <SidebarMenu>
                     {tenantNavItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                            <Link href={item.href}>
+                            <Link href={item.href} legacyBehavior passHref>
                                 <SidebarMenuButton
                                 asChild
                                 isActive={checkActive(item.href)}
@@ -223,10 +244,10 @@ export default function SidebarNav() {
                                     hidden: state === 'expanded',
                                 }}
                                 >
-                                  <>
+                                <a>
                                     <item.icon />
                                     <span>{item.label}</span>
-                                  </>
+                                </a>
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>
@@ -239,7 +260,7 @@ export default function SidebarNav() {
       <SidebarFooter>
         <SidebarMenu>
             <SidebarMenuItem>
-                <Link href={settingsNavItem.href}>
+                <Link href={settingsNavItem.href} legacyBehavior passHref>
                     <SidebarMenuButton
                         asChild
                         isActive={checkActive(settingsNavItem.href)}
@@ -248,10 +269,10 @@ export default function SidebarNav() {
                             hidden: state === 'expanded',
                         }}
                     >
-                    <>
+                    <a>
                         <settingsNavItem.icon />
                         <span>{settingsNavItem.label}</span>
-                    </>
+                    </a>
                     </SidebarMenuButton>
                 </Link>
             </SidebarMenuItem>
