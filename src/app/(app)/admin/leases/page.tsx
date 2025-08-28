@@ -12,10 +12,10 @@ import { FileText, PlusCircle, Calculator } from 'lucide-react';
 type LeaseStatus = 'active' | 'expired' | 'pending';
 
 const mockLeases = [
-  { id: 'lease-001', tenant: 'Global Foods Inc.', booth: 'A-12', startDate: '2024-01-15', endDate: '2025-01-14', amount: 1200, status: 'active' as LeaseStatus },
-  { id: 'lease-002', tenant: 'Crafty Creations', booth: 'B-05', startDate: '2023-06-01', endDate: '2024-05-31', amount: 800, status: 'expired' as LeaseStatus },
-  { id: 'lease-003', tenant: 'Tech Gadgets', booth: 'C-01', startDate: '2024-08-01', endDate: '2025-07-31', amount: 1500, status: 'pending' as LeaseStatus },
-  { id: 'lease-004', tenant: 'Vintage Apparel', booth: 'A-02', startDate: '2024-03-01', endDate: '2025-02-28', amount: 950, status: 'active' as LeaseStatus },
+  { id: 'lease-001', tenant: 'Global Foods Inc.', shop: 'Central Market', shelf: 'A-12', startDate: '2024-01-15', endDate: '2025-01-14', amount: 1200, status: 'active' as LeaseStatus },
+  { id: 'lease-002', tenant: 'Crafty Creations', shop: 'Harbor Mall', shelf: 'B-05', startDate: '2023-06-01', endDate: '2024-05-31', amount: 800, status: 'expired' as LeaseStatus },
+  { id: 'lease-003', tenant: 'Tech Gadgets', shop: 'Central Market', shelf: 'C-01', startDate: '2024-08-01', endDate: '2025-07-31', amount: 1500, status: 'pending' as LeaseStatus },
+  { id: 'lease-004', tenant: 'Vintage Apparel', shop: 'Central Market', shelf: 'A-02', startDate: '2024-03-01', endDate: '2025-02-28', amount: 950, status: 'active' as LeaseStatus },
 ];
 
 const statusVariant: Record<LeaseStatus, 'default' | 'destructive' | 'secondary'> = {
@@ -46,7 +46,8 @@ export default function LeaseManagementPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Tenant</TableHead>
-                  <TableHead>Booth</TableHead>
+                  <TableHead>Shop</TableHead>
+                  <TableHead>Shelf</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -56,7 +57,8 @@ export default function LeaseManagementPage() {
                 {mockLeases.map((lease) => (
                   <TableRow key={lease.id}>
                     <TableCell className="font-medium">{lease.tenant}</TableCell>
-                    <TableCell>{lease.booth}</TableCell>
+                    <TableCell>{(lease as any).shop}</TableCell>
+                    <TableCell>{(lease as any).shelf}</TableCell>
                     <TableCell>{lease.endDate}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant[lease.status]}>{lease.status}</Badge>

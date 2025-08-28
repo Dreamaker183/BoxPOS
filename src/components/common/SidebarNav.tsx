@@ -67,6 +67,7 @@ const adminNavItems = [
 const merchantNavItems = [
   { href: '/merchant/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/merchant/booths', icon: Building2, label: 'Booths' },
+  { href: '/merchant/leases', icon: FileText, label: 'Leases' },
   { href: '/merchant/products', icon: Package, label: 'Products' },
   { href: '/merchant/settlements', icon: HandCoins, label: 'Settlements' },
   { href: '/merchant/reports', icon: FileBarChart, label: 'Reports' },

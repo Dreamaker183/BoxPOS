@@ -41,17 +41,19 @@ export default function TenantProductManagementPage() {
                 if (!y || !m) return undefined;
                 return new Date(y, m - 1, 1);
             }, [salesMonth]);
-    const [showNewSmn, setShowNewSmn] = useState(false);
+    const [showNewSmn, setShowNewSmn] = useState(false); // deprecated: kept to avoid breaking, unused below
     const [salesProductId, setSalesProductId] = useState<string | null>(null);
     const [adjustProductId, setAdjustProductId] = useState<string | null>(null);
+    const [isAdding, setIsAdding] = useState(false);
+    const [draft, setDraft] = useState<{ name: string; description: string; price: string; stock: string; specialRemark: string; imageUrl: string }>({ name: '', description: '', price: '', stock: '', specialRemark: '', imageUrl: '' });
     const searchParams = useSearchParams();
     const router = useRouter();
 
+    // legacy: previously used to open New SMN dialog; now no-op
     useEffect(() => {
         const action = searchParams.get('action');
         if (action === 'newSmn') {
-            setShowNewSmn(true);
-            // 清掉 action 以避免重複開啟
+            // ignore and strip
             const sp = new URLSearchParams(Array.from(searchParams.entries()));
             sp.delete('action');
             router.replace(`/tenant/products${sp.size ? `?${sp.toString()}` : ''}`);
@@ -96,6 +98,35 @@ export default function TenantProductManagementPage() {
         setProducts(prev => prev.map(p => p.id === id ? { ...p, stock: Math.max(0, p.stock + delta) } : p));
     };
 
+    const startAdd = () => {
+        setIsAdding(true);
+        setDraft({ name: '', description: '', price: '', stock: '', specialRemark: '', imageUrl: '' });
+    };
+
+    const cancelAdd = () => {
+        setIsAdding(false);
+        setDraft({ name: '', description: '', price: '', stock: '', specialRemark: '', imageUrl: '' });
+    };
+
+    const saveAdd = () => {
+        const name = draft.name.trim();
+        const price = parseFloat(draft.price);
+        const stock = parseInt(draft.stock || '0', 10);
+        if (!name || isNaN(price)) {
+            // minimal validation
+            alert('Please input product name and valid price');
+            return;
+        }
+        const id = `prod-${Date.now()}`;
+        const imageUrl = draft.imageUrl.trim() || `https://picsum.photos/100/100?random=${Math.floor(Math.random()*1000)}`;
+        const description = draft.description.trim();
+        const specialRemark = draft.specialRemark.trim();
+        setProducts(prev => [{ id, name, description, specialRemark, price, stock: Math.max(0, stock), imageUrl }, ...prev]);
+        setIsAdding(false);
+        setDraft({ name: '', description: '', price: '', stock: '', specialRemark: '', imageUrl: '' });
+        setPage(1);
+    };
+
   return (
         <div className="grid gap-6 lg:grid-cols-1">
             <div className="lg:col-span-1">
@@ -138,8 +169,8 @@ export default function TenantProductManagementPage() {
                                             {shop ? `Shop: ${shop}` : 'Shop: -'} · {shelf ? `Shelf: ${shelf}` : 'Shelf: -'} · Date: {date ? format(date, 'yyyy-MM-dd') : '-'} · Sales Month: {salesMonth}
                                             </div>
                                             <div className="flex gap-2">
-                                                <Button variant="outline" onClick={() => setShowNewSmn(true)}>
-                                                    <PlusCircle className="mr-2 h-4 w-4" /> New SMN
+                                                <Button variant="outline" onClick={startAdd} disabled={isAdding}>
+                                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Product
                                                 </Button>
                                             </div>
                                         </div>
@@ -174,6 +205,36 @@ export default function TenantProductManagementPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
+                            {isAdding && (
+                                <TableRow>
+                                    <TableCell className="font-medium">
+                                        <div className="flex items-start gap-3">
+                                            <Image src={draft.imageUrl || '/favicon.ico'} alt="preview" width={36} height={36} className="rounded-md" />
+                                            <div className="flex flex-col gap-2 w-full max-w-[420px]">
+                                                <Input placeholder="Product name" value={draft.name} onChange={(e) => setDraft(d => ({ ...d, name: e.target.value }))} />
+                                                <Input placeholder="Description" value={draft.description} onChange={(e) => setDraft(d => ({ ...d, description: e.target.value }))} />
+                                                <Input placeholder="Image URL (optional)" value={draft.imageUrl} onChange={(e) => setDraft(d => ({ ...d, imageUrl: e.target.value }))} />
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input type="number" step="0.01" placeholder="0.00" value={draft.price} onChange={(e) => setDraft(d => ({ ...d, price: e.target.value }))} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input type="number" placeholder="0" value={draft.stock} onChange={(e) => setDraft(d => ({ ...d, stock: e.target.value }))} />
+                                    </TableCell>
+                                    <TableCell>-</TableCell>
+                                    <TableCell>
+                                        <Input placeholder="Special Remark" value={draft.specialRemark} onChange={(e) => setDraft(d => ({ ...d, specialRemark: e.target.value }))} />
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="outline" size="sm" onClick={cancelAdd}>Cancel</Button>
+                                            <Button size="sm" onClick={saveAdd}>Save</Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
                                                         {paginatedProducts.map((product) => (
                             <TableRow key={product.id}>
                                 <TableCell className="font-medium flex items-center gap-3">
@@ -285,48 +346,7 @@ export default function TenantProductManagementPage() {
                     </DialogContent>
                 </Dialog>
 
-                {/* New SMN Dialog */}
-                        <Dialog open={showNewSmn} onOpenChange={setShowNewSmn}>
-                            <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>新增 SMN / New SMN</DialogTitle>
-                            <DialogDescription>Register new items. Leave Product ID blank for new products.</DialogDescription>
-                        </DialogHeader>
-                        <div className="text-sm text-muted-foreground">Date: {date ? format(date, 'yyyy-MM-dd') : '-' } · {shop ? `Shop: ${shop}` : 'Shop: -'} · {shelf ? `Shelf: ${shelf}` : 'Shelf: -'}</div>
-                                <div className="border rounded-md max-h-64 overflow-auto">
-                                    <Table className="text-sm">
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>編號(新貨留空) Product ID</TableHead>
-                                        <TableHead>貨品名稱 Name</TableHead>
-                                        <TableHead>數量 Qty +/-</TableHead>
-                                        <TableHead>價錢 Price</TableHead>
-                                        <TableHead>貨品特別要求 Special Remark</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {useMemo(() => Array.from({ length: 10 }), []).map((_, idx) => (
-                                        <TableRow key={idx}>
-                                            <TableCell className="w-[160px]"><Input placeholder={`${idx + 1}.`} /></TableCell>
-                                                    <TableCell className="min-w-[200px]"><Input placeholder="貨品名稱 / Product name" /></TableCell>
-                                                    <TableCell className="w-[110px]"><Input type="number" placeholder="0" /></TableCell>
-                                                    <TableCell className="w-[120px]"><Input type="number" step="0.01" placeholder="0.00" /></TableCell>
-                                            <TableCell><Input placeholder="Sales remark" /></TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-3 space-y-1">
-                            <p>登記新產品：不用輸入貨品編號</p>
-                            <p>Register New Product: No need to input Product ID.</p>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setShowNewSmn(false)}>取消</Button>
-                            <Button onClick={() => setShowNewSmn(false)}>提交 Submit</Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                {/* New SMN Dialog removed as requested; replaced by inline Add Product row */}
     </div>
   );
 }
