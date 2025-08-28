@@ -1,155 +1,187 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, PlusCircle, MoreHorizontal, UploadCloud } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import BarcodeScanner from '@/components/pos/BarcodeScanner';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
+import { Search, MoreHorizontal, Plus, Pencil, Package } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from 'date-fns';
 
-type ProductStatus = 'active' | 'archived';
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  active: boolean;
+  shopId: string;
+  shelfId: string;
+  lastUpdated: Date;
+};
 
-const mockProducts = [
-  { id: 'prod-1', name: 'Handmade Mug', price: 15.00, barcode: '123456789012', stock: 50, status: 'active' as ProductStatus, imageUrl: 'https://picsum.photos/100/100?random=21' },
-  { id: 'prod-2', name: 'Woven Scarf', price: 25.50, barcode: '123456789013', stock: 30, status: 'active' as ProductStatus, imageUrl: 'https://picsum.photos/100/100?random=22' },
-  { id: 'prod-3', name: 'Scented Candle', price: 12.75, barcode: '123456789014', stock: 0, status: 'archived' as ProductStatus, imageUrl: 'https://picsum.photos/100/100?random=23' },
-  { id: 'prod-4', name: 'Leather Wallet', price: 45.00, barcode: '123456789015', stock: 20, status: 'active' as ProductStatus, imageUrl: 'https://picsum.photos/100/100?random=24' },
+const mockProducts: Product[] = [
+  { id: 'p-001', name: 'Handmade Tote Bag', price: 199, stock: 23, active: true, shopId: 'shop-1', shelfId: 'shelf-1', lastUpdated: new Date() },
+  { id: 'p-002', name: 'Organic Honey 500g', price: 149, stock: 8, active: true, shopId: 'shop-1', shelfId: 'shelf-2', lastUpdated: new Date() },
+  { id: 'p-003', name: 'Ceramic Mug', price: 89, stock: 0, active: false, shopId: 'shop-2', shelfId: 'shelf-1', lastUpdated: new Date() },
+  { id: 'p-004', name: 'Wireless Earbuds', price: 399, stock: 51, active: true, shopId: 'shop-2', shelfId: 'shelf-2', lastUpdated: new Date() },
 ];
 
-export default function ProductManagementPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function MerchantProductsPage() {
+  const [q, setQ] = useState('');
+  const [shop, setShop] = useState<string | undefined>();
+  const [shelf, setShelf] = useState<string | undefined>();
+  const [items, setItems] = useState<Product[]>(mockProducts);
 
-  const filteredProducts = mockProducts.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.barcode.includes(searchTerm)
-  );
+  // Derived list respects search, shop, shelf, and time range
+  const products = useMemo(() => {
+    const term = q.toLowerCase().trim();
+    return items.filter((p) => {
+      const matchesQ = p.name.toLowerCase().includes(term);
+      const matchesShop = !shop || p.shopId === shop;
+      const matchesShelf = !shelf || p.shelfId === shelf;
+      return matchesQ && matchesShop && matchesShelf;
+    });
+  }, [items, q, shop, shelf]);
+
+  // Auto-watch: when shop & shelf are selected, simulate live updates on that shelf
+  useEffect(() => {
+    if (!shop || !shelf) return;
+    const id = setInterval(() => {
+      setItems((prev) => {
+        const onShelf = prev.filter((p) => p.shopId === shop && p.shelfId === shelf);
+        if (onShelf.length === 0) return prev;
+        const pick = onShelf[Math.floor(Math.random() * onShelf.length)];
+        return prev.map((p) =>
+          p.id === pick.id
+            ? { ...p, stock: Math.max(0, p.stock + (Math.random() > 0.5 ? 1 : -1)), lastUpdated: new Date() }
+            : p
+        );
+      });
+    }, 3000);
+    return () => clearInterval(id);
+  }, [shop, shelf]);
+
+  const shops = [
+    { id: 'shop-1', name: 'Shop A' },
+    { id: 'shop-2', name: 'Shop B' },
+  ];
+  const shelves = [
+    { id: 'shelf-1', name: 'Shelf A', shopId: 'shop-1' },
+    { id: 'shelf-2', name: 'Shelf B', shopId: 'shop-1' },
+    { id: 'shelf-1', name: 'Shelf A', shopId: 'shop-2' },
+    { id: 'shelf-2', name: 'Shelf B', shopId: 'shop-2' },
+  ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-            <Card>
-                <CardHeader>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <CardTitle>Product Management</CardTitle>
-                        <CardDescription>Add, edit, and manage your products.</CardDescription>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle>Products</CardTitle>
+            <CardDescription>Specify Shop and Shelf to watch products on that shelf.</CardDescription>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <div className="flex gap-2">
+              <Select value={shop} onValueChange={setShop}>
+                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Shop" /></SelectTrigger>
+                <SelectContent>
+                  {shops.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={shelf} onValueChange={setShelf} disabled={!shop}>
+                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Shelf" /></SelectTrigger>
+                <SelectContent>
+                  {shelves.filter((sh) => sh.shopId === shop).map((sh) => (
+                    <SelectItem key={`${sh.shopId}-${sh.id}`} value={sh.id}>{sh.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="relative flex-1 sm:flex-initial">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search products..."
+                  className="pl-8"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 self-end sm:self-auto">
+              {shop && shelf && (
+                <Badge variant="secondary">Watching {shops.find(s=>s.id===shop)?.name} / {shelf.toUpperCase()}</Badge>
+              )}
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> New Product
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead className="hidden md:table-cell">Location</TableHead>
+                <TableHead className="hidden sm:table-cell">Price</TableHead>
+                <TableHead className="hidden sm:table-cell">Stock</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products.map((p) => (
+                <TableRow key={p.id}>
+                  <TableCell className="font-medium">{p.name}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {p.shopId.replace('shop-','Shop ')} / {p.shelfId.replace('shelf-','Shelf ')}
+                    <div className="text-xs text-muted-foreground">{format(p.lastUpdated, 'yyyy-MM-dd HH:mm')}</div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">${p.price.toFixed(2)}</TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      {p.stock}
+                      {p.stock === 0 ? (
+                        <Badge variant="destructive" className="ml-2">Out</Badge>
+                      ) : p.stock < 10 ? (
+                        <Badge variant="secondary" className="ml-2">Low</Badge>
+                      ) : null}
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
-                        <div className="relative flex-1 sm:flex-initial">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                            placeholder="Search products or barcode..."
-                            className="pl-8"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Stock</TableHead>
-                        <TableHead>Barcode</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredProducts.map((product) => (
-                        <TableRow key={product.id}>
-                            <TableCell className="font-medium flex items-center gap-3">
-                                <Image src={product.imageUrl} alt={product.name} width={40} height={40} className="rounded-md" />
-                                {product.name}
-                            </TableCell>
-                            <TableCell>${product.price.toFixed(2)}</TableCell>
-                            <TableCell>{product.stock}</TableCell>
-                            <TableCell className="font-mono">{product.barcode}</TableCell>
-                            <TableCell>
-                               <Switch id={`status-${product.id}`} defaultChecked={product.status === 'active'} />
-                            </TableCell>
-                            <TableCell className="text-right">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>View History</DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            </TableCell>
-                        </TableRow>
-                        ))}
-                    </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </div>
-        <div className="lg:col-span-1 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Add New Product</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-1">
-                        <Label htmlFor="product-name">Product Name</Label>
-                        <Input id="product-name" placeholder="e.g., Handmade Mug" />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="product-price">Price</Label>
-                        <Input id="product-price" type="number" placeholder="15.00" />
-                    </div>
-                     <div className="space-y-1">
-                        <Label htmlFor="product-stock">Stock</Label>
-                        <Input id="product-stock" type="number" placeholder="50" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="product-image">Product Image</Label>
-                        <div className="flex items-center justify-center w-full">
-                            <label
-                            htmlFor="product-image-upload"
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted hover:bg-muted/80"
-                            >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                <p className="mb-2 text-sm text-muted-foreground">
-                                <span className="font-semibold">Click to upload</span>
-                                </p>
-                            </div>
-                            <Input id="product-image-upload" type="file" className="hidden" />
-                            </label>
-                        </div>
-                    </div>
-                     <Button className="w-full">
-                        <PlusCircle className="mr-2" />
-                        Add Product
-                    </Button>
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader>
-                    <CardTitle>Barcode Scanner</CardTitle>
-                    <CardDescription>Scan a product's barcode to quickly add it.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <BarcodeScanner onScan={(code) => setSearchTerm(code)} />
-                </CardContent>
-            </Card>
-        </div>
+                  </TableCell>
+                  <TableCell>
+                    {p.active ? (
+                      <Badge variant="default">Active</Badge>
+                    ) : (
+                      <Badge variant="outline">Inactive</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                        <DropdownMenuItem>Deactivate</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

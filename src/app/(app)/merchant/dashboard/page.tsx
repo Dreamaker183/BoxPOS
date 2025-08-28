@@ -1,5 +1,5 @@
 
-'use client';
+"use client";
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -29,7 +29,7 @@ const mockNotifications = [
 
 export default function MerchantDashboardPage() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Assigned Booths</CardTitle>
@@ -105,6 +105,9 @@ export default function MerchantDashboardPage() {
                     </li>
                 ))}
             </ul>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Note: Merchant types — Franchise (ongoing royalties) vs Rent (rent-only). See Settlements for details.
+            </p>
         </CardContent>
       </Card>
     </div>

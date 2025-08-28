@@ -1,7 +1,6 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,114 +9,101 @@ import { Search, Plus, Minus, History, Package } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import BarcodeScanner from '@/components/pos/BarcodeScanner';
 
-const mockInventory = [
-  { id: 'prod-1', name: 'Handmade Mug', stock: 50, threshold: 10, sku: 'HM-001' },
-  { id: 'prod-2', name: 'Woven Scarf', stock: 30, threshold: 15, sku: 'WS-001' },
-  { id: 'prod-3', name: 'Scented Candle', stock: 8, threshold: 10, sku: 'SC-001' },
-  { id: 'prod-4', name: 'Leather Wallet', stock: 20, threshold: 5, sku: 'LW-001' },
-  { id: 'prod-5', name: 'Ceramic Bowl', stock: 12, threshold: 10, sku: 'CB-001' },
+type Item = { id: string; name: string; stock: number; min: number };
+
+const mockItems: Item[] = [
+  { id: 'sku-1001', name: 'Bamboo Toothbrush', stock: 12, min: 10 },
+  { id: 'sku-1002', name: 'Reusable Straw Set', stock: 4, min: 10 },
+  { id: 'sku-1003', name: 'Eco Notebook', stock: 0, min: 5 },
+  { id: 'sku-1004', name: 'Scented Candle', stock: 27, min: 10 },
 ];
 
-export default function InventoryTrackingPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [inventory, setInventory] = useState(mockInventory);
+export default function MerchantInventoryPage() {
+  const [q, setQ] = useState('');
+  const [items, setItems] = useState<Item[]>(mockItems);
 
-  const filteredInventory = inventory.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  const visible = useMemo(
+    () => items.filter((i) => i.name.toLowerCase().includes(q.toLowerCase().trim())),
+    [items, q]
   );
 
-  const updateStock = (productId: string, amount: number) => {
-    setInventory(prev => prev.map(item => 
-        item.id === productId ? { ...item, stock: Math.max(0, item.stock + amount) } : item
-    ));
+  const adjust = (id: string, delta: number) => {
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, stock: Math.max(0, i.stock + delta) } : i))
+    );
   };
-  
+
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="lg:col-span-2 space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <CardTitle>Inventory Levels</CardTitle>
-                <CardDescription>Monitor and manage your product stock levels.</CardDescription>
-              </div>
-              <div className="relative flex-1 sm:flex-initial w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name or SKU..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle>Inventory</CardTitle>
+            <CardDescription>Scan and adjust your stock levels in real time.</CardDescription>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-initial">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search items..."
+                className="pl-8"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
             </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead className="text-center">Stock Level</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredInventory.map((item) => {
-                  const stockPercentage = (item.stock / (item.threshold * 3)) * 100;
-                  const isLowStock = item.stock <= item.threshold;
-                  return (
-                    <TableRow key={item.id} className={isLowStock ? 'bg-destructive/10' : ''}>
-                      <TableCell className="font-medium">
-                        <div>{item.name}</div>
-                        <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                      </TableCell>
-                      <TableCell className="text-center w-48">
-                        <div className="flex items-center gap-2">
-                           <span className={`font-bold w-8 ${isLowStock ? 'text-destructive' : ''}`}>{item.stock}</span>
-                           <Progress value={stockPercentage} className="h-2 flex-1" />
-                        </div>
-                         <p className="text-xs text-muted-foreground mt-1">Threshold: {item.threshold}</p>
-                      </TableCell>
-                      <TableCell className="text-right">
-                         <div className="flex gap-2 justify-end">
-                            <Button size="icon" variant="outline" onClick={() => updateStock(item.id, -1)}><Minus /></Button>
-                            <Button size="icon" variant="outline" onClick={() => updateStock(item.id, 1)}><Plus /></Button>
-                         </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-                <CardTitle>Scan Stock</CardTitle>
-                <CardDescription>Use the camera to scan a barcode and update stock.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <BarcodeScanner onScan={(code) => setSearchTerm(code)} />
-            </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Log of recent inventory changes.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3 text-sm">
-                <li className="flex items-center gap-3"><Package className="text-green-500" /> <div><span className="font-medium">Handmade Mug</span> stock updated to 50.</div></li>
-                <li className="flex items-center gap-3"><Package className="text-red-500" /> <div><span className="font-medium">Woven Scarf</span> stock reduced to 30.</div></li>
-                <li className="flex items-center gap-3"><History className="text-muted-foreground" /> <div>Manual count for <span className="font-medium">Leather Wallet</span> confirmed.</div></li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+            <Button variant="outline">
+              <History className="mr-2 h-4 w-4" /> History
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="border rounded-md p-4">
+            <p className="mb-2 text-sm text-muted-foreground">Barcode Scanner</p>
+            <BarcodeScanner onScan={(code: string) => alert(`Scanned: ${code}`)} />
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Item</TableHead>
+                <TableHead className="hidden sm:table-cell">Stock</TableHead>
+                <TableHead className="hidden sm:table-cell">Min</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Adjust</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visible.map((i) => {
+                const ratio = i.min === 0 ? 1 : Math.min(1, i.stock / i.min);
+                const status = i.stock === 0 ? 'Out of stock' : i.stock < i.min ? 'Low' : 'OK';
+                return (
+                  <TableRow key={i.id}>
+                    <TableCell className="font-medium">{i.name}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{i.stock}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{i.min}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{status}</span>
+                      </div>
+                      <Progress value={ratio * 100} className="mt-2 h-2" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="inline-flex gap-2">
+                        <Button size="icon" variant="outline" onClick={() => adjust(i.id, -1)}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" onClick={() => adjust(i.id, 1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

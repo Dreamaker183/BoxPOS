@@ -19,12 +19,8 @@ import {
   DatabaseZap,
   Building2,
   Package,
-  Boxes,
   HandCoins,
   Receipt,
-  DollarSign,
-  FilePlus,
-  FilePen,
   Camera,
 } from 'lucide-react';
 
@@ -65,20 +61,22 @@ const adminNavItems = [
     { href: '/admin/permissions', icon: Shield, label: 'Permissions' },
     { href: '/admin/reports', icon: FileBarChart, label: 'Reports' },
     { href: '/admin/backup', icon: DatabaseZap, label: 'Backup' },
+  { href: '/admin/booths', icon: Building2, label: 'Booths' },
 ];
 
 const merchantNavItems = [
-    { href: '/merchant/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/merchant/booths', icon: Building2, label: 'Booths' },
-    { href: '/merchant/products', icon: Package, label: 'Products' },
-    { href: '/merchant/inventory', icon: Boxes, label: 'Inventory' },
-    { href: '/merchant/settlements', icon: HandCoins, label: 'Settlements' },
-    { href: '/merchant/reports', icon: FileBarChart, label: 'Reports' },
+  { href: '/merchant/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/merchant/booths', icon: Building2, label: 'Booths' },
+  { href: '/merchant/products', icon: Package, label: 'Products' },
+  { href: '/merchant/settlements', icon: HandCoins, label: 'Settlements' },
+  { href: '/merchant/reports', icon: FileBarChart, label: 'Reports' },
 ];
 
 const tenantNavItems = [
   { href: '/tenant/products', icon: Package, label: 'My Products' },
+  { href: '/tenant/booths', icon: Building2, label: 'My Booths' },
   { href: '/tenant/shelf', icon: Camera, label: 'Shelf' },
+  { href: '/tenant/settlements', icon: HandCoins, label: 'Settlements' },
   { href: '/tenant/reports', icon: Receipt, label: 'My Reports' },
 ];
 
@@ -92,7 +90,7 @@ export default function SidebarNav() {
 
   // Track and persist the last known role so role menus stay visible
   // when navigating to non-role routes like /pos, /profile, /notifications.
-  type Role = 'admin' | 'merchant' | 'tenant' | null;
+  type Role = 'admin' | 'merchant' | 'tenant' | 'cashier' | null;
   const getRoleFromPath = (path: string): Role => {
     if (path.startsWith('/admin')) return 'admin';
     if (path.startsWith('/merchant')) return 'merchant';
@@ -103,8 +101,8 @@ export default function SidebarNav() {
   const [role, setRole] = useState<Role>(() => {
     // Initialize from localStorage (if any) or from current path
     if (typeof window !== 'undefined') {
-      const stored = window.localStorage.getItem('boxpos:lastRole') as Role | null;
-      if (stored === 'admin' || stored === 'merchant' || stored === 'tenant') return stored;
+  const stored = window.localStorage.getItem('boxpos:lastRole') as any;
+  if (stored === 'admin' || stored === 'merchant' || stored === 'tenant' || stored === 'cashier') return stored as Role;
     }
     return getRoleFromPath(pathname);
   });
@@ -156,21 +154,19 @@ export default function SidebarNav() {
         <SidebarMenu>
           {visibleMainNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
-                <SidebarMenuButton
-                  asChild
-                  isActive={checkActive(item.href)}
-                  tooltip={{
-                    children: item.label,
-                    hidden: state === 'expanded',
-                  }}
-                >
-                  <a>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </a>
-                </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton
+                asChild
+                isActive={checkActive(item.href)}
+                tooltip={{
+                  children: item.label,
+                  hidden: state === 'expanded',
+                }}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -181,21 +177,19 @@ export default function SidebarNav() {
                 <SidebarMenu>
                     {adminNavItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                            <Link href={item.href} legacyBehavior passHref>
-                                <SidebarMenuButton
-                                asChild
-                                isActive={checkActive(item.href)}
-                                tooltip={{
-                                    children: item.label,
-                                    hidden: state === 'expanded',
-                                }}
-                                >
-                                <a>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                </a>
-                                </SidebarMenuButton>
-                            </Link>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={checkActive(item.href)}
+                              tooltip={{
+                                  children: item.label,
+                                  hidden: state === 'expanded',
+                              }}
+                            >
+                              <Link href={item.href}>
+                                <item.icon />
+                                <span>{item.label}</span>
+                              </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
@@ -203,31 +197,29 @@ export default function SidebarNav() {
         )}
 
   {role === 'merchant' && (
-            <SidebarGroup>
-                <SidebarGroupLabel>Merchant</SidebarGroupLabel>
-                <SidebarMenu>
-                    {merchantNavItems.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                            <Link href={item.href} legacyBehavior passHref>
-                                <SidebarMenuButton
-                                asChild
-                                isActive={checkActive(item.href)}
-                                tooltip={{
-                                    children: item.label,
-                                    hidden: state === 'expanded',
-                                }}
-                                >
-                                <a>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                </a>
-                                </SidebarMenuButton>
-                            </Link>
-                        </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
-        )}
+      <SidebarGroup>
+        <SidebarGroupLabel>Merchant</SidebarGroupLabel>
+        <SidebarMenu>
+          {merchantNavItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                asChild
+                isActive={checkActive(item.href)}
+                tooltip={{
+                  children: item.label,
+                  hidden: state === 'expanded',
+                }}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroup>
+    )}
 
   {role === 'tenant' && (
             <SidebarGroup>
@@ -235,21 +227,19 @@ export default function SidebarNav() {
                 <SidebarMenu>
                     {tenantNavItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                            <Link href={item.href} legacyBehavior passHref>
-                                <SidebarMenuButton
-                                asChild
-                                isActive={checkActive(item.href)}
-                                tooltip={{
-                                    children: item.label,
-                                    hidden: state === 'expanded',
-                                }}
-                                >
-                                <a>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                </a>
-                                </SidebarMenuButton>
-                            </Link>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={checkActive(item.href)}
+                              tooltip={{
+                                  children: item.label,
+                                  hidden: state === 'expanded',
+                              }}
+                            >
+                              <Link href={item.href}>
+                                <item.icon />
+                                <span>{item.label}</span>
+                              </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
@@ -260,21 +250,19 @@ export default function SidebarNav() {
       <SidebarFooter>
         <SidebarMenu>
             <SidebarMenuItem>
-                <Link href={settingsNavItem.href} legacyBehavior passHref>
-                    <SidebarMenuButton
-                        asChild
-                        isActive={checkActive(settingsNavItem.href)}
-                        tooltip={{
-                            children: settingsNavItem.label,
-                            hidden: state === 'expanded',
-                        }}
-                    >
-                    <a>
-                        <settingsNavItem.icon />
-                        <span>{settingsNavItem.label}</span>
-                    </a>
-                    </SidebarMenuButton>
+              <SidebarMenuButton
+                asChild
+                isActive={checkActive(settingsNavItem.href)}
+                tooltip={{
+                    children: settingsNavItem.label,
+                    hidden: state === 'expanded',
+                }}
+              >
+                <Link href={settingsNavItem.href}>
+                  <settingsNavItem.icon />
+                  <span>{settingsNavItem.label}</span>
                 </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
            <SidebarMenuItem>
                 <SidebarMenuButton

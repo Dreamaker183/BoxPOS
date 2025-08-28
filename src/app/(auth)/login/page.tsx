@@ -20,12 +20,15 @@ export default function LoginPage() {
     e.preventDefault();
     // In a real app, you'd have authentication logic here.
     // For this prototype, we'll just redirect based on the selected role.
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('boxpos:lastRole', role);
+    }
     if (role === 'admin') {
       router.push('/admin/dashboard');
     } else if (role === 'merchant') {
       router.push('/merchant/dashboard');
     } else if (role === 'tenant') {
-      router.push('/tenant/dashboard');
+      router.push('/tenant/products');
     } else if (role === 'cashier') {
       router.push('/pos');
     }
